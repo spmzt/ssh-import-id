@@ -1,9 +1,8 @@
-You're logged onto a cloud instance working on a problem with your fellow devs, and you want to invite them to log in and take a look at these crazy log messages. What do?
-
-Oh. You have to ask them to cat their public SSH key, paste it into IRC (wait, no, it's id\_rsa.pub, not id\_rsa silly!) then you copy it and cat it to the end of authorized\_hosts.
-
-That's where ssh-import-id comes in. With ssh-import-id, you can add the public SSH keys from a known, trusted online identity to grant SSH access.
-
+You're logged onto a cloud instance working on a problem with your fellow devs.
+You want to invite them to log in and take a look at these crazy log messages.
+What do? Oh. You have to ask them to cat their public SSH key,
+paste it into IRC (wait, no, it's id\_rsa.pub, not id\_rsa silly!)
+then you copy it and cat it to the end of authorized\_hosts.
+That's where ssh-import-id comes in. With ssh-import-id,
+you can add the public SSH keys from a trusted online identity to grant access.
 Currently supported identities include Github and Launchpad.
-
-WWW: https://git.launchpad.net/ssh-import-id
