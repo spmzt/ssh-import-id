@@ -1,18 +1,22 @@
-PORTNAME=		ssh-import-id
+PORTNAME=	ssh-import-id
 DISTVERSION=	5.11
-CATEGORIES=		security python
+CATEGORIES=	security python
 MASTER_SITES=	CHEESESHOP
 PKGNAMEPREFIX=	${PYTHON_PKGNAMEPREFIX}
 
-MAINTAINER= 	p.mousavizadeh@protonmail.com
-COMMENT=		Authorize SSH public keys from trusted online identities
+MAINTAINER=	p.mousavizadeh@protonmail.com
+COMMENT=	Authorize SSH public keys from trusted online identities
+WWW=		https://git.launchpad.net/ssh-import-id
 
-LICENSE=		GPLv3
+LICENSE=	GPLv3
 
-USES=			python:3.9
-USE_PYTHON=		autoplist distutils
+RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}distro>0:sysutils/py-distro@${PY_FLAVOR}
 
-PLIST_FILES=	bin/ssh-import-id-gh \
-				bin/ssh-import-id-lp
+USES=		python:2.6+
+USE_PYTHON=	autoplist distutils
+
+PLIST_FILES=	bin/ssh-import-id \
+		bin/ssh-import-id-gh \
+		bin/ssh-import-id-lp
 
 .include <bsd.port.mk>
