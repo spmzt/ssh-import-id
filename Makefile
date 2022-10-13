@@ -13,6 +13,6 @@ LICENSE=	GPLv3
 RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}distro>0:sysutils/py-distro@${PY_FLAVOR}
 
 USES=		python:2.6+
-USE_PYTHON=	autoplist distutils
+USE_PYTHON=	concurrent autoplist distutils
 
 .include <bsd.port.mk>
