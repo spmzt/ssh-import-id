@@ -15,8 +15,4 @@ RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}distro>0:sysutils/py-distro@${PY_FLAVOR}
 USES=		python:2.6+
 USE_PYTHON=	autoplist distutils
 
-PLIST_FILES=	bin/ssh-import-id \
-		bin/ssh-import-id-gh \
-		bin/ssh-import-id-lp
-
 .include <bsd.port.mk>
