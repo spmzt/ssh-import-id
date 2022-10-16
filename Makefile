@@ -9,10 +9,11 @@ COMMENT=	Authorize SSH public keys from trusted online identities
 WWW=		https://git.launchpad.net/ssh-import-id
 
 LICENSE=	GPLv3
+#LICENSE_FILE=Not shipped in PyPI sdist
 
 RUN_DEPENDS=	${PYTHON_PKGNAMEPREFIX}distro>0:sysutils/py-distro@${PY_FLAVOR}
 
-USES=		python:2.6+
+USES=		python
 USE_PYTHON=	concurrent autoplist distutils
 
 .include <bsd.port.mk>
