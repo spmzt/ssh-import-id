@@ -50,7 +50,7 @@ get_url_of_ssh_keys(char *username, char *provider)
         }
         strcpy(github_url, "https://github.com/");
         strncat(github_url, username, 39); /* 39 is the maximum username characters in github */
-        strncat(github_url, ".keys", 5);
+        strncat(github_url, ".keys", sizeof(github_url) - strlen(github_url) - 1);
         return github_url;
     } else {
         fprintf(stderr, "Providers other than github is not implemented. Selected provider is %s\n", provider);
@@ -75,7 +75,7 @@ main(int argc,char *argv[])
 
     /* get or create ssh directory */
     char *ssh_directory = strdup(home);
-    strncat(ssh_directory, "/.ssh", 5);
+    strncat(ssh_directory, "/.ssh", sizeof(ssh_directory) - strlen(ssh_directory) - 1);
     if (mkdir(ssh_directory, 0700) == -1 && EEXIST != errno) {
         fprintf(stderr, "Create %s directory failed: %s\n", ssh_directory, strerror(errno));
         exit(EXIT_FAILURE);
@@ -88,7 +88,7 @@ main(int argc,char *argv[])
     }
     strcpy(authorized_keys, ssh_directory);
     free(ssh_directory);
-    strncat(authorized_keys, "/authorized_keys", 16);
+    strncat(authorized_keys, "/authorized_keys", sizeof(authorized_keys) - strlen(authorized_keys) - 1);
 
     /* get url of ssh keys */
     char* url = get_url_of_ssh_keys(argv[1], "github");
