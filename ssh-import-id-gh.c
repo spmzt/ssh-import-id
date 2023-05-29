@@ -94,7 +94,7 @@ main(int argc, char *argv[])
 {
 	int c;
 	int errflag = 0;
-	char* useragent = (char*)malloc(17);
+	char* useragent = (char*)malloc(18);
 	if (useragent == NULL) {
 		fprintf(stderr, "malloc() failed\n");
 		exit(EXIT_FAILURE);
