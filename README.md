@@ -11,3 +11,6 @@ Any PR(s) are welcomed.
 - add -r flag for remove 
 - add ability to fetch multiple userids
 - add capability to understand x_ratelimit_remaining header for github
+
+## Known Issues
+- Currently, User-Agent option is only supported 16 characters which is too short for most real User-Agents.

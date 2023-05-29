@@ -106,10 +106,6 @@ main(int argc, char *argv[])
 		switch(c) 
 		{
 			case 'u':
-				if (sizeof(optarg) > 4096) {
-					fprintf(stderr, "User-Agent is more than 4096 characters.\n");
-					exit(EXIT_FAILURE);
-				}
 				useragent = realloc(useragent, sizeof(optarg));
 				if (useragent == NULL) {
 					fprintf(stderr, "malloc() failed\n");
