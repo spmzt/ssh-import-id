@@ -6,7 +6,6 @@ ssh-import-id-gh written in C language
 Any PR(s) are welcomed.
 
 ## TODO
-- add copyright to source file
 - add -o flag for output
 - add -r flag for remove 
 - add -u flag for useragent
