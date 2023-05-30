@@ -196,7 +196,6 @@ main(int argc, char *argv[])
 		curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
 	
 		/* some servers do not like requests that are made without a user-agent field, so we provide one */
-		fprintf(stdout, "useragent: %s\n", useragent);
 		curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, useragent);
 
 		/* get it! */
