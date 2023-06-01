@@ -15,4 +15,3 @@ Any PR(s) are welcomed.
 
 ## Known Issues
 - Currently, User-Agent option is only supported 16 characters which is too short for most real User-Agents.
-- Username characters must be restricted to avoid the execution of command, instead of removing excess.

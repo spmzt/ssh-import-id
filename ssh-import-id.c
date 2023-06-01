@@ -74,6 +74,10 @@ char*
 get_url_of_ssh_keys(char *username, char *provider)
 {
 	if (!strcmp(provider, "gh")) {
+		if (strlen(username) > 39) {
+			fprintf(stderr, "username is too long for github.\n");
+			exit(EXIT_FAILURE);
+		}
 		char *github_url = (char*)malloc(19 + 39 + 5 + 1);
 		if (github_url == NULL) {
 			fprintf(stderr, "malloc() failed\n");
@@ -84,6 +88,10 @@ get_url_of_ssh_keys(char *username, char *provider)
 		strncat(github_url, ".keys", sizeof(github_url) - strlen(github_url) - 1);
 		return github_url;
 	} else if (!strcmp(provider, "lp")) {
+		if (strlen(username) > 32) {
+			fprintf(stderr, "username is too long for launchpad.\n");
+			exit(EXIT_FAILURE);
+		}
 		char *launchpad_url = (char*)malloc(23 + 32 + 9 + 1);
 		if (launchpad_url == NULL) {
 			fprintf(stderr, "malloc() failed\n");
