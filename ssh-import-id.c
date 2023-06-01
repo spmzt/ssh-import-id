@@ -1,4 +1,4 @@
-/*-
+/*
  * SPDX-License-Identifier: BSD-3-Clause
  *
  * Copyright (c) 2022, 2023, Seyed Pouria Mousavizadeh Tehrani
@@ -73,8 +73,8 @@ usage()
 char*
 get_url_of_ssh_keys(char *username, char *provider)
 {
-	if (!strcmp(provider, "github")) {
-		char *github_url = (char*)malloc(18 + 39 + 5 + 1);
+	if (!strcmp(provider, "gh")) {
+		char *github_url = (char*)malloc(19 + 39 + 5 + 1);
 		if (github_url == NULL) {
 			fprintf(stderr, "malloc() failed\n");
 			exit(EXIT_FAILURE);
@@ -83,8 +83,18 @@ get_url_of_ssh_keys(char *username, char *provider)
 		strncat(github_url, username, 39); /* 39 is the maximum username characters in github */
 		strncat(github_url, ".keys", sizeof(github_url) - strlen(github_url) - 1);
 		return github_url;
+	} else if (!strcmp(provider, "lp")) {
+		char *launchpad_url = (char*)malloc(23 + 32 + 9 + 1);
+		if (launchpad_url == NULL) {
+			fprintf(stderr, "malloc() failed\n");
+			exit(EXIT_FAILURE);
+		}
+		strcpy(launchpad_url, "https://launchpad.net/~");
+		strncat(launchpad_url, username, 32); /* 32 is the maximum username characters in launchpad */
+		strncat(launchpad_url, "/+sshkeys", sizeof(launchpad_url) - strlen(launchpad_url) - 1);
+		return launchpad_url;
 	} else {
-		fprintf(stderr, "Providers other than github is not implemented. Selected provider is %s\n", provider);
+		fprintf(stderr, "Providers other than github and launchpad is not implemented. Selected provider is %s\n", provider);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -136,6 +146,24 @@ main(int argc, char *argv[])
 		usage();
 	}
 
+	/* provider detection */
+	char* provider = (char*)malloc(strlen(argv[optind]) - 1);
+	if (provider == NULL) {
+		fprintf(stderr, "malloc() failed\n");
+		exit(EXIT_FAILURE);
+	}
+	if (strchr(argv[optind], ':') != NULL) {
+		if ((provider = strsep(&argv[optind], ":")) == NULL) {
+			fprintf(stderr, "Provider can not be empty.\n");
+			exit(EXIT_FAILURE);
+		} else if (strlen(provider) == 0) {
+			fprintf(stderr, "Provider can not be empty.\n");
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		provider = "lp";
+	}
+
 	/* get home directory */
 	char *home;
 	home = getenv("HOME");
@@ -162,8 +190,9 @@ main(int argc, char *argv[])
 	strncat(authorized_keys, "/authorized_keys", sizeof(authorized_keys) - strlen(authorized_keys) - 1);
 
 	/* get url of ssh keys */
-	char* url = get_url_of_ssh_keys(argv[optind], "github");
+	char* url = get_url_of_ssh_keys(argv[optind], provider);
 
+	/* curl structure to fetch key */
 	CURL *curl_handle;
 	CURLcode res;
 
@@ -185,6 +214,9 @@ main(int argc, char *argv[])
 		/* send all data to this function  */
 		curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
 
+		/* request failure on HTTP response */
+		curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1L);
+
 		/* open the file */
 		int fd;
 		if ((fd = open(authorized_keys, O_WRONLY | O_CREAT | O_APPEND, 0600 )) == -1) {
@@ -196,7 +228,6 @@ main(int argc, char *argv[])
 		curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
 	
 		/* some servers do not like requests that are made without a user-agent field, so we provide one */
-		fprintf(stdout, "useragent: %s\n", useragent);
 		curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, useragent);
 
 		/* get it! */
@@ -205,11 +236,17 @@ main(int argc, char *argv[])
 					curl_easy_strerror(res));
 			close(fd);
 			exit(EXIT_FAILURE);
-		}
+		} else if(res == CURLE_HTTP_RETURNED_ERROR) {
+			/* an HTTP response error problem */
+			fprintf(stderr, "Fail: %s\n",
+					curl_easy_strerror(res));
+			close(fd);
+			exit(EXIT_FAILURE);
+  		}
 		free(useragent);
 
 		if (strcmp(chunk.memory, "Not Found") == 0) {
-			fprintf(stderr, "Github Account Not Found.\n");
+			fprintf(stderr, "Account Not Found.\n");
 			exit(EXIT_FAILURE);
 		}
 
