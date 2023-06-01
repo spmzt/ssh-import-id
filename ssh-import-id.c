@@ -66,7 +66,7 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 void
 usage()
 {
-		fprintf(stdout, "Parameters: [-u User-Agent] <Github Username>\n");
+		fprintf(stdout, "Parameters: [-u User-Agent] [Provider:]<Username>\n");
 		exit(EXIT_FAILURE);
 }
 
@@ -102,7 +102,7 @@ get_url_of_ssh_keys(char *username, char *provider)
 		strncat(launchpad_url, "/+sshkeys", sizeof(launchpad_url) - strlen(launchpad_url) - 1);
 		return launchpad_url;
 	} else {
-		fprintf(stderr, "Providers other than github and launchpad is not implemented. Selected provider is %s\n", provider);
+		fprintf(stderr, "Providers other than gh (github) and lp (launchpad) is not implemented. Selected provider is %s.\n", provider);
 		exit(EXIT_FAILURE);
 	}
 }
