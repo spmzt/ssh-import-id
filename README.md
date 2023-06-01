@@ -1,5 +1,5 @@
 # ssh-import-id
-ssh-import-id-gh written in C language
+ssh-import-id written in C language
 
 ## Contributions
 
