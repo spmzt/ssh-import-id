@@ -161,6 +161,7 @@ main(int argc, char *argv[])
 			exit(EXIT_FAILURE);
 		}
 	} else {
+		/* set the default provider to the launchpad to be backward compatible */
 		provider = "lp";
 	}
 
