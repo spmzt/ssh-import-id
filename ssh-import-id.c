@@ -243,13 +243,13 @@ main(int argc, char *argv[])
 		if ((res = curl_easy_perform(curl_handle)) != CURLE_OK) {
 			fprintf(stderr, "curl failed: %s\n",
 					curl_easy_strerror(res));
-			close(fd);
+			(void)close(fd);
 			exit(EXIT_FAILURE);
 		} else if(res == CURLE_HTTP_RETURNED_ERROR) {
 			/* an HTTP response error problem */
 			fprintf(stderr, "Fail: %s\n",
 					curl_easy_strerror(res));
-			close(fd);
+			(void)close(fd);
 			exit(EXIT_FAILURE);
   		}
 		free(useragent);
@@ -265,7 +265,7 @@ main(int argc, char *argv[])
 		}
 
 		/* close the header file */
-		close(fd);
+		(void)close(fd);
 
 		free(authorized_keys);
 		free(chunk.memory);
