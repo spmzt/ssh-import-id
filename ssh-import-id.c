@@ -38,48 +38,52 @@
 #include <sys/stat.h>
 #include <curl/curl.h>
 
-struct MemoryStruct {
-  char *memory;
-  size_t size;
+struct MemoryStruct
+{
+	char *memory;
+	size_t size;
 };
 
 static size_t
 WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
-  size_t realsize = size * nmemb;
-  struct MemoryStruct *mem = (struct MemoryStruct *)userp;
+	size_t realsize = size * nmemb;
+	struct MemoryStruct *mem = (struct MemoryStruct *)userp;
 
-  mem->memory = realloc(mem->memory, mem->size + realsize + 1);
-  if(mem->memory == NULL) {
-	/* out of memory */
-	printf("not enough memory (realloc returned NULL)\n");
-	return 0;
-  }
+	mem->memory = realloc(mem->memory, mem->size + realsize + 1);
+	if (mem->memory == NULL)
+	{
+		/* out of memory */
+		printf("not enough memory (realloc returned NULL)\n");
+		return 0;
+	}
 
-  memcpy(&(mem->memory[mem->size]), contents, realsize);
-  mem->size += realsize;
-  mem->memory[mem->size] = 0;
+	memcpy(&(mem->memory[mem->size]), contents, realsize);
+	mem->size += realsize;
+	mem->memory[mem->size] = 0;
 
-  return realsize;
+	return realsize;
 }
 
-void
-usage()
+void usage()
 {
-		fprintf(stdout, "Parameters: [-u User-Agent] [Provider:]<Username>\n");
-		exit(EXIT_FAILURE);
+	fprintf(stdout, "Parameters: [-t] [-u User-Agent] [Provider:]<Username>\n");
+	exit(EXIT_FAILURE);
 }
 
-char*
+char *
 get_url_of_ssh_keys(char *username, char *provider)
 {
-	if (!strcmp(provider, "gh")) {
-		if (strlen(username) > 39) {
+	if (!strcmp(provider, "gh"))
+	{
+		if (strlen(username) > 39)
+		{
 			fprintf(stderr, "username is too long for github.\n");
 			exit(EXIT_FAILURE);
 		}
-		char *github_url = (char*)malloc(19 + 39 + 5 + 1);
-		if (github_url == NULL) {
+		char *github_url = (char *)malloc(19 + 39 + 5 + 1);
+		if (github_url == NULL)
+		{
 			fprintf(stderr, "malloc() failed\n");
 			exit(EXIT_FAILURE);
 		}
@@ -87,13 +91,17 @@ get_url_of_ssh_keys(char *username, char *provider)
 		strncat(github_url, username, 39); /* 39 is the maximum username characters in github */
 		strncat(github_url, ".keys", sizeof(github_url) - strlen(github_url) - 1);
 		return github_url;
-	} else if (!strcmp(provider, "lp")) {
-		if (strlen(username) > 32) {
+	}
+	else if (!strcmp(provider, "lp"))
+	{
+		if (strlen(username) > 32)
+		{
 			fprintf(stderr, "username is too long for launchpad.\n");
 			exit(EXIT_FAILURE);
 		}
-		char *launchpad_url = (char*)malloc(23 + 32 + 9 + 1);
-		if (launchpad_url == NULL) {
+		char *launchpad_url = (char *)malloc(23 + 32 + 9 + 1);
+		if (launchpad_url == NULL)
+		{
 			fprintf(stderr, "malloc() failed\n");
 			exit(EXIT_FAILURE);
 		}
@@ -101,74 +109,91 @@ get_url_of_ssh_keys(char *username, char *provider)
 		strncat(launchpad_url, username, 32); /* 32 is the maximum username characters in launchpad */
 		strncat(launchpad_url, "/+sshkeys", sizeof(launchpad_url) - strlen(launchpad_url) - 1);
 		return launchpad_url;
-	} else {
+	}
+	else
+	{
 		fprintf(stderr, "Providers other than gh (github) and lp (launchpad) is not implemented. Selected provider is %s.\n", provider);
 		exit(EXIT_FAILURE);
 	}
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	int c;
 	int errflag = 0;
-	char* useragent = (char*)malloc(18);
-	if (useragent == NULL) {
+	int truncate = 0;
+	char *useragent = (char *)malloc(18);
+	if (useragent == NULL)
+	{
 		fprintf(stderr, "malloc() failed\n");
 		exit(EXIT_FAILURE);
 	}
 	strcpy(useragent, "libcurl-agent/1.0");
-	extern char* optarg;
-    extern int optind, optopt;
-	while ((c = getopt(argc, argv, "u:")) != -1) {
-		switch(c) 
+	extern char *optarg;
+	extern int optind, optopt;
+	while ((c = getopt(argc, argv, "tu:")) != -1)
+	{
+		switch (c)
 		{
-			case 'u':
-				useragent = realloc(useragent, sizeof(optarg));
-				if (useragent == NULL) {
-					fprintf(stderr, "malloc() failed\n");
-					exit(EXIT_FAILURE);
-				}
-				strcpy(useragent, optarg);
-				break;
-				case ':':
-					fprintf(stderr, "-u require an argument.");
-					errflag++;
-					break;
-        	case '?':
-               	fprintf(stderr, "Unrecognised option: -%c\n", optopt);
-        	    errflag++;
-				break;
-			default:
-        	    errflag++;
+		case 't':
+			truncate++;
+			break;
+		case 'u':
+			useragent = realloc(useragent, sizeof(optarg));
+			if (useragent == NULL)
+			{
+				fprintf(stderr, "malloc() failed\n");
+				exit(EXIT_FAILURE);
+			}
+			strcpy(useragent, optarg);
+			break;
+		case ':':
+			fprintf(stderr, "-u require an argument.");
+			errflag++;
+			break;
+		case '?':
+			fprintf(stderr, "Unrecognised option: -%c\n", optopt);
+			errflag++;
+			break;
+		default:
+			errflag++;
 		}
 	}
 
-	if (errflag) {
+	if (errflag)
+	{
 		free(useragent);
 		usage();
 	}
 
-	if ((optind == argc) || (optind + 1 < argc)) {
+	if ((optind == argc) || (optind + 1 < argc))
+	{
 		free(useragent);
 		usage();
 	}
 
 	/* provider detection */
-	char* provider = (char*)malloc(strlen(argv[optind]) - 1);
-	if (provider == NULL) {
+	char *provider = (char *)malloc(strlen(argv[optind]) - 1);
+	if (provider == NULL)
+	{
 		fprintf(stderr, "malloc() failed\n");
 		exit(EXIT_FAILURE);
 	}
-	if (strchr(argv[optind], ':') != NULL) {
-		if ((provider = strsep(&argv[optind], ":")) == NULL) {
-			fprintf(stderr, "Provider can not be empty.\n");
-			exit(EXIT_FAILURE);
-		} else if (strlen(provider) == 0) {
+	if (strchr(argv[optind], ':') != NULL)
+	{
+		if ((provider = strsep(&argv[optind], ":")) == NULL)
+		{
 			fprintf(stderr, "Provider can not be empty.\n");
 			exit(EXIT_FAILURE);
 		}
-	} else {
+		else if (strlen(provider) == 0)
+		{
+			fprintf(stderr, "Provider can not be empty.\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+	else
+	{
 		/* set the default provider to the launchpad to be backward compatible */
 		provider = "lp";
 	}
@@ -176,7 +201,8 @@ main(int argc, char *argv[])
 	/* get home directory */
 	char *home;
 	home = getenv("HOME");
-	if (home == NULL) {
+	if (home == NULL)
+	{
 		fprintf(stderr, "HOME env is not set.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -184,13 +210,15 @@ main(int argc, char *argv[])
 	/* get or create ssh directory */
 	char *ssh_directory = strdup(home);
 	strncat(ssh_directory, "/.ssh", sizeof(ssh_directory) - strlen(ssh_directory) - 1);
-	if (mkdir(ssh_directory, 0700) == -1 && EEXIST != errno) {
+	if (mkdir(ssh_directory, 0700) == -1 && EEXIST != errno)
+	{
 		fprintf(stderr, "Create %s directory failed: %s\n", ssh_directory, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-	char *authorized_keys = (char*)malloc(strlen(ssh_directory) + 16 + 1);
-	if (authorized_keys == NULL) {
+	char *authorized_keys = (char *)malloc(strlen(ssh_directory) + 16 + 1);
+	if (authorized_keys == NULL)
+	{
 		fprintf(stderr, "malloc() failed\n");
 		exit(EXIT_FAILURE);
 	}
@@ -199,7 +227,7 @@ main(int argc, char *argv[])
 	strncat(authorized_keys, "/authorized_keys", sizeof(authorized_keys) - strlen(authorized_keys) - 1);
 
 	/* get url of ssh keys */
-	char* url = get_url_of_ssh_keys(argv[optind], provider);
+	char *url = get_url_of_ssh_keys(argv[optind], provider);
 
 	/* curl structure to fetch key */
 	CURL *curl_handle;
@@ -207,15 +235,15 @@ main(int argc, char *argv[])
 
 	struct MemoryStruct chunk;
 
-	chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */
-	chunk.size = 0;    /* no data at this point */
+	chunk.memory = malloc(1); /* will be grown as needed by the realloc above */
+	chunk.size = 0;			  /* no data at this point */
 
 	curl_global_init(CURL_GLOBAL_ALL);
 
 	curl_handle = curl_easy_init();
 
-	if(curl_handle) {
-
+	if (curl_handle)
+	{
 
 		/* set url for curl */
 		curl_easy_setopt(curl_handle, CURLOPT_URL, url);
@@ -226,40 +254,53 @@ main(int argc, char *argv[])
 		/* request failure on HTTP response */
 		curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1L);
 
+		/* overwrite or append the keys */
+		int authorized_keys_mode = O_APPEND;
+		if (truncate > 0)
+		{
+			authorized_keys_mode = O_TRUNC;
+		}
+
 		/* open the file */
 		int fd;
-		if ((fd = open(authorized_keys, O_WRONLY | O_CREAT | O_APPEND, 0600 )) == -1) {
-			 fprintf(stderr, "Can't open the %s: %s\n", authorized_keys, strerror(errno));
-			 exit(EXIT_FAILURE);
+		if ((fd = open(authorized_keys, O_WRONLY | O_CREAT | authorized_keys_mode, 0600)) == -1)
+		{
+			fprintf(stderr, "Can't open the %s: %s\n", authorized_keys, strerror(errno));
+			exit(EXIT_FAILURE);
 		}
 
 		/* write the page body to this file handle */
 		curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, (void *)&chunk);
-	
+
 		/* some servers do not like requests that are made without a user-agent field, so we provide one */
 		curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, useragent);
 
 		/* get it! */
-		if ((res = curl_easy_perform(curl_handle)) != CURLE_OK) {
+		if ((res = curl_easy_perform(curl_handle)) != CURLE_OK)
+		{
 			fprintf(stderr, "curl failed: %s\n",
 					curl_easy_strerror(res));
 			(void)close(fd);
 			exit(EXIT_FAILURE);
-		} else if(res == CURLE_HTTP_RETURNED_ERROR) {
+		}
+		else if (res == CURLE_HTTP_RETURNED_ERROR)
+		{
 			/* an HTTP response error problem */
 			fprintf(stderr, "Fail: %s\n",
 					curl_easy_strerror(res));
 			(void)close(fd);
 			exit(EXIT_FAILURE);
-  		}
+		}
 		free(useragent);
 
-		if (strcmp(chunk.memory, "Not Found") == 0) {
+		if (strcmp(chunk.memory, "Not Found") == 0)
+		{
 			fprintf(stderr, "Account Not Found.\n");
 			exit(EXIT_FAILURE);
 		}
 
-		if (write(fd, chunk.memory, (int)chunk.size) != (int)chunk.size) {
+		if (write(fd, chunk.memory, (int)chunk.size) != (int)chunk.size)
+		{
 			fprintf(stderr, "Write on %s failed: %s\n", authorized_keys, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
