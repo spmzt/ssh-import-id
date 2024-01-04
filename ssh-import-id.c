@@ -257,9 +257,7 @@ int main(int argc, char *argv[])
 		/* overwrite or append the keys */
 		int authorized_keys_mode = O_APPEND;
 		if (truncate > 0)
-		{
 			authorized_keys_mode = O_TRUNC;
-		}
 
 		/* open the file */
 		int fd;
