@@ -38,6 +38,11 @@
 #include <sys/stat.h>
 #include <curl/curl.h>
 
+/* 39 is the maximum username characters in github */
+const unsigned int GH_MAX_USERNAME = 39;
+/* 32 is the maximum username characters in launchpad */
+const unsigned int LP_MAX_USERNAME = 32;
+
 struct MemoryStruct
 {
 	char *memory;
@@ -76,38 +81,42 @@ get_url_of_ssh_keys(char *username, char *provider)
 {
 	if (!strcmp(provider, "gh"))
 	{
-		if (strlen(username) > 39)
+		if (strlen(username) > GH_MAX_USERNAME)
 		{
 			fprintf(stderr, "username is too long for github.\n");
 			exit(EXIT_FAILURE);
 		}
-		char *github_url = (char *)malloc(19 + 39 + 5 + 1);
+
+		const unsigned int GH_URL_BUFFSIZE = 19 + GH_MAX_USERNAME + 5 + 1;
+		char *github_url = (char *)malloc(GH_URL_BUFFSIZE);
 		if (github_url == NULL)
 		{
 			fprintf(stderr, "malloc() failed\n");
 			exit(EXIT_FAILURE);
 		}
 		strcpy(github_url, "https://github.com/");
-		strncat(github_url, username, 39); /* 39 is the maximum username characters in github */
-		strncat(github_url, ".keys", 5);
+		strncat(github_url, username, GH_URL_BUFFSIZE - strlen(github_url) - 1);
+		strncat(github_url, ".keys", GH_URL_BUFFSIZE - strlen(github_url) - 1);
 		return github_url;
 	}
 	else if (!strcmp(provider, "lp"))
 	{
-		if (strlen(username) > 32)
+		if (strlen(username) > LP_MAX_USERNAME)
 		{
 			fprintf(stderr, "username is too long for launchpad.\n");
 			exit(EXIT_FAILURE);
 		}
-		char *launchpad_url = (char *)malloc(23 + 32 + 9 + 1);
+
+		const unsigned int LP_URL_BUFFSIZE = 23 + LP_MAX_USERNAME + 9 + 1;
+		char *launchpad_url = (char *)malloc(LP_URL_BUFFSIZE);
 		if (launchpad_url == NULL)
 		{
 			fprintf(stderr, "malloc() failed\n");
 			exit(EXIT_FAILURE);
 		}
 		strcpy(launchpad_url, "https://launchpad.net/~");
-		strncat(launchpad_url, username, 32); /* 32 is the maximum username characters in launchpad */
-		strncat(launchpad_url, "/+sshkeys", 9);
+		strncat(launchpad_url, username, LP_URL_BUFFSIZE - strlen(launchpad_url) - 1);
+		strncat(launchpad_url, "/+sshkeys", LP_URL_BUFFSIZE - strlen(launchpad_url) - 1);
 		return launchpad_url;
 	}
 	else
@@ -128,7 +137,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "malloc() failed\n");
 		exit(EXIT_FAILURE);
 	}
-	strcpy(useragent, "libcurl-agent/1.0");
+	strncpy(useragent, "libcurl-agent/1.0", 18);
 	extern char *optarg;
 	extern int optind, optopt;
 	while ((c = getopt(argc, argv, "tu:")) != -1)
@@ -139,13 +148,19 @@ int main(int argc, char *argv[])
 			truncate++;
 			break;
 		case 'u':
-			useragent = realloc(useragent, sizeof(optarg));
+			if (strlen(optarg) > 200)
+			{
+				fprintf(stderr, "User-Agent is too big. Keep it under 200 characters.\n");
+				exit(EXIT_FAILURE);
+			}
+
+			useragent = realloc(useragent, strlen(optarg));
 			if (useragent == NULL)
 			{
 				fprintf(stderr, "malloc() failed\n");
 				exit(EXIT_FAILURE);
 			}
-			strcpy(useragent, optarg);
+			strncpy(useragent, optarg, strlen(optarg));
 			break;
 		case ':':
 			fprintf(stderr, "-u require an argument.");
@@ -208,23 +223,18 @@ int main(int argc, char *argv[])
 	}
 
 	/* get or create ssh directory */
-	char *ssh_directory = strdup(home);
-	strncat(ssh_directory, "/.ssh", 5);
+	const unsigned int SSH_DIR_BUFFSIZE = strlen(home) + 5 + 16 + 1;
+	char *ssh_directory = (char *)malloc(SSH_DIR_BUFFSIZE);
+	strcpy(ssh_directory, home);
+	strncat(ssh_directory, "/.ssh", SSH_DIR_BUFFSIZE - strlen(ssh_directory) - 1);
 	if (mkdir(ssh_directory, 0700) == -1 && EEXIST != errno)
 	{
 		fprintf(stderr, "Create %s directory failed: %s\n", ssh_directory, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
-	char *authorized_keys = (char *)malloc(strlen(ssh_directory) + 16 + 1);
-	if (authorized_keys == NULL)
-	{
-		fprintf(stderr, "malloc() failed\n");
-		exit(EXIT_FAILURE);
-	}
-	strcpy(authorized_keys, ssh_directory);
-	free(ssh_directory);
-	strncat(authorized_keys, "/authorized_keys", 16);
+	char *authorized_keys = ssh_directory;
+	strncat(authorized_keys, "/authorized_keys", SSH_DIR_BUFFSIZE - strlen(authorized_keys) - 1);
 
 	/* get url of ssh keys */
 	char *url = get_url_of_ssh_keys(argv[optind], provider);
