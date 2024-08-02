@@ -89,7 +89,7 @@ get_url_of_ssh_keys(char *username, char *provider)
 		}
 		strcpy(github_url, "https://github.com/");
 		strncat(github_url, username, 39); /* 39 is the maximum username characters in github */
-		strncat(github_url, ".keys", sizeof(github_url) - strlen(github_url) - 1);
+		strncat(github_url, ".keys", 5);
 		return github_url;
 	}
 	else if (!strcmp(provider, "lp"))
@@ -107,7 +107,7 @@ get_url_of_ssh_keys(char *username, char *provider)
 		}
 		strcpy(launchpad_url, "https://launchpad.net/~");
 		strncat(launchpad_url, username, 32); /* 32 is the maximum username characters in launchpad */
-		strncat(launchpad_url, "/+sshkeys", sizeof(launchpad_url) - strlen(launchpad_url) - 1);
+		strncat(launchpad_url, "/+sshkeys", 9);
 		return launchpad_url;
 	}
 	else
@@ -209,7 +209,7 @@ int main(int argc, char *argv[])
 
 	/* get or create ssh directory */
 	char *ssh_directory = strdup(home);
-	strncat(ssh_directory, "/.ssh", sizeof(ssh_directory) - strlen(ssh_directory) - 1);
+	strncat(ssh_directory, "/.ssh", 5);
 	if (mkdir(ssh_directory, 0700) == -1 && EEXIST != errno)
 	{
 		fprintf(stderr, "Create %s directory failed: %s\n", ssh_directory, strerror(errno));
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
 	}
 	strcpy(authorized_keys, ssh_directory);
 	free(ssh_directory);
-	strncat(authorized_keys, "/authorized_keys", sizeof(authorized_keys) - strlen(authorized_keys) - 1);
+	strncat(authorized_keys, "/authorized_keys", 16);
 
 	/* get url of ssh keys */
 	char *url = get_url_of_ssh_keys(argv[optind], provider);
