@@ -1,6 +1,9 @@
-OS=					$$(uname -o)
+OS=$$(uname -o)
 
 .PHONY: depends
+
+default: build
+
 depends:
 	@echo "Install Dependencies"
 	@if [ -e /etc/debian_version ]; then\
