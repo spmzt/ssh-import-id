@@ -140,11 +140,7 @@ main(int argc, char *argv[])
 			break;
 
 		case 'h':
-			errflag++;
-			break;
-
 		default:
-			fprintf(stderr, "Unrecognised option: -%c\n", optopt);
 			errflag++;
 		}
 	}
